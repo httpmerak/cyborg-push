@@ -12,6 +12,9 @@ Author URI: https://cyborgsolutions.com.br
 Requires at least: 3.0
 */
 
+// Debug log para verificar se o módulo está sendo carregado
+log_message('error', 'Cyborg Push Module: File loaded. API defined: ' . (defined('API') ? 'YES' : 'NO'));
+
 define('CYBORG_PUSH_MODULE_NAME', 'cyborg_push');
 define('CYBORG_PUSH_MODULE_PATH', __DIR__);
 
