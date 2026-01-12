@@ -256,9 +256,34 @@ class Cyborg_push_sender
             }
         }
         
+        // Translate the notification description
+        $body = $notification->description;
+        
+        // Check if it's a language key (starts with 'not_')
+        if (strpos($body, 'not_') === 0) {
+            // Get additional data for interpolation
+            $this->CI->db->select('additional_data');
+            $this->CI->db->where('id', $notification->id);
+            $additional = $this->CI->db->get(db_prefix() . 'notifications')->row();
+            
+            $additional_data = [];
+            if ($additional && !empty($additional->additional_data)) {
+                $additional_data = unserialize($additional->additional_data);
+                if (!is_array($additional_data)) {
+                    $additional_data = [];
+                }
+            }
+            
+            // Translate with additional data
+            $body = _l($body, $additional_data);
+        }
+        
+        // Strip HTML tags for clean push notification
+        $body = strip_tags($body);
+        
         return [
             'title' => $sender_name,
-            'body'  => strip_tags($notification->description),
+            'body'  => $body,
             'data'  => [
                 'notification_id' => $notification->id,
                 'link'            => $notification->link ? admin_url($notification->link) : admin_url()
