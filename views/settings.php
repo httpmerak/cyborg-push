@@ -65,49 +65,6 @@
                             <input type="text" name="cyborg_push_default_badge" class="form-control" value="<?php echo get_option('cyborg_push_default_badge'); ?>">
                         </div>
                         
-                        <hr />
-                        
-                        <!-- FCM Settings -->
-                        <h5 class="font-bold"><?php echo _l('cyborg_push_fcm_settings'); ?></h5>
-                        
-                        <div class="form-group">
-                            <label class="control-label">
-                                <input type="checkbox" name="cyborg_push_fcm_enabled" value="1" <?php echo get_option('cyborg_push_fcm_enabled') == '1' ? 'checked' : ''; ?>>
-                                <?php echo _l('cyborg_push_fcm_enabled'); ?>
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="control-label"><?php echo _l('cyborg_push_fcm_server_key'); ?></label>
-                            <input type="password" name="cyborg_push_fcm_server_key" class="form-control" value="<?php echo get_option('cyborg_push_fcm_server_key'); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="control-label"><?php echo _l('cyborg_push_fcm_sender_id'); ?></label>
-                            <input type="text" name="cyborg_push_fcm_sender_id" class="form-control" value="<?php echo get_option('cyborg_push_fcm_sender_id'); ?>">
-                        </div>
-                        
-                        <hr />
-                        
-                        <!-- OneSignal Settings -->
-                        <h5 class="font-bold"><?php echo _l('cyborg_push_onesignal_settings'); ?></h5>
-                        
-                        <div class="form-group">
-                            <label class="control-label">
-                                <input type="checkbox" name="cyborg_push_onesignal_enabled" value="1" <?php echo get_option('cyborg_push_onesignal_enabled') == '1' ? 'checked' : ''; ?>>
-                                <?php echo _l('cyborg_push_onesignal_enabled'); ?>
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="control-label"><?php echo _l('cyborg_push_onesignal_app_id'); ?></label>
-                            <input type="text" name="cyborg_push_onesignal_app_id" class="form-control" value="<?php echo get_option('cyborg_push_onesignal_app_id'); ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="control-label"><?php echo _l('cyborg_push_onesignal_api_key'); ?></label>
-                            <input type="password" name="cyborg_push_onesignal_api_key" class="form-control" value="<?php echo get_option('cyborg_push_onesignal_api_key'); ?>">
-                        </div>
                         
                         <hr />
                         

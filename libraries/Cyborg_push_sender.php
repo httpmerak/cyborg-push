@@ -47,16 +47,6 @@ class Cyborg_push_sender
             }
         }
         
-        // Also send via FCM if enabled
-        if (get_option('cyborg_push_fcm_enabled') == '1') {
-            $this->send_fcm($user_id, null, $notification);
-        }
-        
-        // Also send via OneSignal if enabled
-        if (get_option('cyborg_push_onesignal_enabled') == '1') {
-            $this->send_onesignal($user_id, null, $notification);
-        }
-        
         return $success;
     }
 
@@ -151,77 +141,6 @@ class Cyborg_push_sender
         }
     }
 
-
-    /**
-     * Send notification via FCM
-     * 
-     * @param int|null $user_id
-     * @param int|null $contact_id
-     * @param array $notification
-     * @return bool
-     */
-    protected function send_fcm($user_id, $contact_id, $notification)
-    {
-        $server_key = get_option('cyborg_push_fcm_server_key');
-        
-        if (empty($server_key)) {
-            return false;
-        }
-        
-        // FCM implementation
-        // TODO: Implement FCM token storage and sending
-        
-        return false;
-    }
-
-    /**
-     * Send notification via OneSignal
-     * 
-     * @param int|null $user_id
-     * @param int|null $contact_id
-     * @param array $notification
-     * @return bool
-     */
-    protected function send_onesignal($user_id, $contact_id, $notification)
-    {
-        $app_id = get_option('cyborg_push_onesignal_app_id');
-        $api_key = get_option('cyborg_push_onesignal_api_key');
-        
-        if (empty($app_id) || empty($api_key)) {
-            return false;
-        }
-        
-        // Build OneSignal payload
-        $fields = [
-            'app_id'   => $app_id,
-            'headings' => ['en' => $notification['title'] ?? ''],
-            'contents' => ['en' => $notification['body'] ?? ''],
-            'data'     => $notification['data'] ?? []
-        ];
-        
-        // Target by external user ID
-        if ($user_id) {
-            $fields['include_external_user_ids'] = ['staff_' . $user_id];
-        } elseif ($contact_id) {
-            $fields['include_external_user_ids'] = ['contact_' . $contact_id];
-        }
-        
-        $ch = curl_init('https://onesignal.com/api/v1/notifications');
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Basic ' . $api_key
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        return $http_code >= 200 && $http_code < 300;
-    }
 
     /**
      * Get last notification for user from database
