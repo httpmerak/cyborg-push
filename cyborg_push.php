@@ -36,10 +36,15 @@ function cyborg_push_activation_hook()
 register_language_files(CYBORG_PUSH_MODULE_NAME, [CYBORG_PUSH_MODULE_NAME]);
 
 /**
- * Load module helper
+ * Initialize module on app_init
  */
-$CI = &get_instance();
-$CI->load->helper(CYBORG_PUSH_MODULE_NAME . '/cyborg_push');
+hooks()->add_action('app_init', 'cyborg_push_app_init');
+
+function cyborg_push_app_init()
+{
+    $CI = &get_instance();
+    $CI->load->helper(CYBORG_PUSH_MODULE_NAME . '/cyborg_push');
+}
 
 /**
  * Initialize menu items in admin
