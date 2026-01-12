@@ -76,3 +76,81 @@ foreach ($options as $option) {
         add_option($option['name'], $option['value']);
     }
 }
+
+// =============================================================================
+// PATCH: Modificar general_helper.php para chamar Cyborg Push diretamente
+// Isso é necessário porque a API não carrega os módulos normalmente
+// =============================================================================
+
+$helper_file = APPPATH . 'helpers/general_helper.php';
+$helper_content = file_get_contents($helper_file);
+
+// Verificar se o patch já foi aplicado
+$patch_marker = '// Cyborg Push - Enviar notificações push nativas';
+if (strpos($helper_content, $patch_marker) === false) {
+    
+    // O código a ser inserido após hooks()->do_action('before_pusher_trigger_notification', $users);
+    $cyborg_push_code = '
+    // Cyborg Push - Enviar notificações push nativas
+    // Isso garante que funcione mesmo quando chamado via API (onde os módulos não são carregados)
+    if (!empty($users) && is_array($users) && get_option(\'cyborg_push_enabled\') == \'1\') {
+        $CI = &get_instance();
+        
+        // Carregar helper e library do Cyborg Push se existirem
+        $module_path = APPPATH . \'../modules/cyborg_push/\';
+        if (is_dir($module_path)) {
+            // Carregar helper se não estiver carregado
+            if (!function_exists(\'cyborg_push_send_notification_to_user\')) {
+                $helper_path = $module_path . \'helpers/cyborg_push_helper.php\';
+                if (file_exists($helper_path)) {
+                    require_once($helper_path);
+                }
+            }
+            
+            // Carregar e usar a biblioteca diretamente
+            $CI->load->model(\'cyborg_push/Cyborg_push_model\', \'cyborg_push_model\');
+            $CI->load->library(\'cyborg_push/Cyborg_push_sender\', null, \'cyborg_push_sender\');
+            
+            foreach ($users as $user_id) {
+                $CI->cyborg_push_sender->send_to_user($user_id);
+            }
+        }
+    }
+
+';
+    
+    // Encontrar o ponto de inserção (após o hook)
+    $search = "hooks()->do_action('before_pusher_trigger_notification', \$users);";
+    $replace = $search . "\n" . $cyborg_push_code;
+    
+    $new_content = str_replace($search, $replace, $helper_content);
+    
+    // Salvar o arquivo modificado
+    if ($new_content !== $helper_content) {
+        // Criar backup
+        $backup_file = $helper_file . '.bak.' . date('YmdHis');
+        copy($helper_file, $backup_file);
+        
+        // Aplicar patch
+        file_put_contents($helper_file, $new_content);
+        
+        log_activity('Cyborg Push: Patch applied to general_helper.php (backup: ' . basename($backup_file) . ')');
+    }
+}
+
+// =============================================================================
+// Copiar Service Worker para a raiz do site
+// =============================================================================
+
+$sw_source = __DIR__ . '/assets/js/sw.js';
+$sw_dest = FCPATH . 'cyborg-push-sw.js';
+
+if (file_exists($sw_source) && !file_exists($sw_dest)) {
+    // Ler conteúdo do SW
+    $sw_content = file_get_contents($sw_source);
+    
+    // Escrever na raiz
+    file_put_contents($sw_dest, $sw_content);
+    
+    log_activity('Cyborg Push: Service Worker copied to site root');
+}
