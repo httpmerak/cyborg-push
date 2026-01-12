@@ -21,23 +21,29 @@ class Cyborg_push_model extends App_Model
             $this->db->where($where);
         }
         
-        $this->db->select('s.*, 
-            CASE 
-                WHEN s.user_id IS NOT NULL THEN CONCAT(staff.firstname, " ", staff.lastname)
-                WHEN s.contact_id IS NOT NULL THEN CONCAT(contacts.firstname, " ", contacts.lastname)
-                ELSE "Unknown"
-            END as user_name,
-            CASE 
-                WHEN s.user_id IS NOT NULL THEN "staff"
-                ELSE "contact"
-            END as user_type
-        ', false);
+        $this->db->select('s.*, staff.firstname as staff_firstname, staff.lastname as staff_lastname, contacts.firstname as contact_firstname, contacts.lastname as contact_lastname');
         $this->db->from(db_prefix() . 'cyborg_push_subscriptions s');
         $this->db->join(db_prefix() . 'staff staff', 'staff.staffid = s.user_id', 'left');
         $this->db->join(db_prefix() . 'contacts contacts', 'contacts.id = s.contact_id', 'left');
         $this->db->order_by('s.created_at', 'DESC');
         
-        return $this->db->get()->result_array();
+        $results = $this->db->get()->result_array();
+        
+        // Process user_name and user_type in PHP instead of SQL
+        foreach ($results as &$row) {
+            if (!empty($row['user_id'])) {
+                $row['user_name'] = trim($row['staff_firstname'] . ' ' . $row['staff_lastname']);
+                $row['user_type'] = 'staff';
+            } elseif (!empty($row['contact_id'])) {
+                $row['user_name'] = trim($row['contact_firstname'] . ' ' . $row['contact_lastname']);
+                $row['user_type'] = 'contact';
+            } else {
+                $row['user_name'] = 'Unknown';
+                $row['user_type'] = 'unknown';
+            }
+        }
+        
+        return $results;
     }
 
     /**
@@ -181,20 +187,27 @@ class Cyborg_push_model extends App_Model
      */
     public function get_logs($limit = 100, $offset = 0)
     {
-        $this->db->select('l.*, 
-            CASE 
-                WHEN l.user_id IS NOT NULL THEN CONCAT(staff.firstname, " ", staff.lastname)
-                WHEN l.contact_id IS NOT NULL THEN CONCAT(contacts.firstname, " ", contacts.lastname)
-                ELSE "Unknown"
-            END as user_name
-        ', false);
+        $this->db->select('l.*, staff.firstname as staff_firstname, staff.lastname as staff_lastname, contacts.firstname as contact_firstname, contacts.lastname as contact_lastname');
         $this->db->from(db_prefix() . 'cyborg_push_logs l');
         $this->db->join(db_prefix() . 'staff staff', 'staff.staffid = l.user_id', 'left');
         $this->db->join(db_prefix() . 'contacts contacts', 'contacts.id = l.contact_id', 'left');
         $this->db->order_by('l.created_at', 'DESC');
         $this->db->limit($limit, $offset);
         
-        return $this->db->get()->result_array();
+        $results = $this->db->get()->result_array();
+        
+        // Process user_name in PHP instead of SQL
+        foreach ($results as &$row) {
+            if (!empty($row['user_id'])) {
+                $row['user_name'] = trim($row['staff_firstname'] . ' ' . $row['staff_lastname']);
+            } elseif (!empty($row['contact_id'])) {
+                $row['user_name'] = trim($row['contact_firstname'] . ' ' . $row['contact_lastname']);
+            } else {
+                $row['user_name'] = 'Unknown';
+            }
+        }
+        
+        return $results;
     }
 
     /**
