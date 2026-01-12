@@ -256,6 +256,16 @@ class Cyborg_push_sender
             }
         }
         
+        // Load the target user's language for translation
+        $user_language = $this->get_user_language($user_id);
+        if ($user_language) {
+            // Save current language
+            $current_language = get_instance()->lang->is_loaded;
+            
+            // Load the user's language file
+            load_admin_language($user_language);
+        }
+        
         // Translate the notification description
         $body = $notification->description;
         
@@ -289,5 +299,25 @@ class Cyborg_push_sender
                 'link'            => $notification->link ? admin_url($notification->link) : admin_url()
             ]
         ];
+    }
+    
+    /**
+     * Get user's preferred language
+     * 
+     * @param int $user_id
+     * @return string|null
+     */
+    protected function get_user_language($user_id)
+    {
+        $this->CI->db->select('default_language');
+        $this->CI->db->where('staffid', $user_id);
+        $staff = $this->CI->db->get(db_prefix() . 'staff')->row();
+        
+        if ($staff && !empty($staff->default_language)) {
+            return $staff->default_language;
+        }
+        
+        // Fallback to system default language
+        return get_option('active_language');
     }
 }
