@@ -447,6 +447,9 @@ class Cyborg_push_webpush
         $error = curl_error($ch);
         curl_close($ch);
         
+        // Log para debug
+        log_message('error', 'Cyborg Push: HTTP Response Code: ' . $httpCode . ' - Response: ' . substr($response, 0, 200));
+        
         // Verificar resposta
         if ($httpCode >= 200 && $httpCode < 300) {
             return ['success' => true, 'message' => 'Sent', 'expired' => false];
