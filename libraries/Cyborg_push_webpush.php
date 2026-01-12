@@ -298,45 +298,38 @@ class Cyborg_push_webpush
      */
     protected function signWithVapidKey($data)
     {
-        // Decodificar chave privada VAPID
-        $privateKeyBytes = $this->base64UrlDecode($this->vapidPrivateKey);
+        // First, try to decode as base64 PEM (new format)
+        $decodedPem = @base64_decode($this->vapidPrivateKey, true);
         
-        // Log para debug
-        log_message('debug', 'Cyborg Push: Private key length after decode: ' . strlen($privateKeyBytes));
-        
-        // A chave privada VAPID deve ter 32 bytes, mas pode variar
-        // Alguns geradores produzem chaves com padding diferente
-        if (strlen($privateKeyBytes) < 32) {
-            // Pad to 32 bytes
-            $privateKeyBytes = str_pad($privateKeyBytes, 32, "\x00", STR_PAD_LEFT);
-        } elseif (strlen($privateKeyBytes) > 32) {
-            // Take last 32 bytes
-            $privateKeyBytes = substr($privateKeyBytes, -32);
-        }
-        
-        // Construir chave privada PEM
-        $pem = $this->privateKeyToPem($privateKeyBytes);
-        if (!$pem) {
-            log_message('error', 'Cyborg Push: Failed to create PEM from private key');
-            return false;
+        if ($decodedPem && strpos($decodedPem, '-----BEGIN') !== false) {
+            // It's a PEM stored as base64
+            $pem = $decodedPem;
+            log_message('error', 'Cyborg Push: Using stored PEM format');
+        } else {
+            // Old format - try to reconstruct PEM from raw bytes
+            $privateKeyBytes = $this->base64UrlDecode($this->vapidPrivateKey);
+            
+            log_message('error', 'Cyborg Push: Private key length after decode: ' . strlen($privateKeyBytes));
+            
+            // Normalize to 32 bytes
+            if (strlen($privateKeyBytes) < 32) {
+                $privateKeyBytes = str_pad($privateKeyBytes, 32, "\x00", STR_PAD_LEFT);
+            } elseif (strlen($privateKeyBytes) > 32) {
+                $privateKeyBytes = substr($privateKeyBytes, -32);
+            }
+            
+            // Try to construct PEM
+            $pem = $this->privateKeyToPemAlternative($privateKeyBytes);
         }
         
         $key = @openssl_pkey_get_private($pem);
         if (!$key) {
             $error = openssl_error_string();
             log_message('error', 'Cyborg Push: OpenSSL error getting private key: ' . $error);
-            
-            // Try alternative PEM format
-            $pem = $this->privateKeyToPemAlternative($privateKeyBytes);
-            $key = @openssl_pkey_get_private($pem);
-            
-            if (!$key) {
-                log_message('error', 'Cyborg Push: Alternative PEM also failed');
-                return false;
-            }
+            return false;
         }
         
-        // Assinar
+        // Sign
         $signature = '';
         $result = openssl_sign($data, $signature, $key, OPENSSL_ALGO_SHA256);
         
@@ -346,7 +339,7 @@ class Cyborg_push_webpush
             return false;
         }
         
-        // Converter de DER para raw (r || s)
+        // Convert DER to raw (r || s)
         return $this->derToRaw($signature);
     }
     
