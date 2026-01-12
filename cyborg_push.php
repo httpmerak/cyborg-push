@@ -125,10 +125,11 @@ function cyborg_push_add_head_components()
     $CI = &get_instance();
     
     // Add VAPID public key and service worker registration
+    // SW must be in root for proper scope
     echo '<script>
         window.CYBORG_PUSH_CONFIG = {
             vapidPublicKey: "' . get_option('cyborg_push_vapid_public_key') . '",
-            swPath: "' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/sw.js') . '",
+            swPath: "' . site_url('cyborg-push-sw.js') . '",
             subscribeUrl: "' . admin_url('cyborg_push/subscribe') . '",
             unsubscribeUrl: "' . admin_url('cyborg_push/unsubscribe') . '"
         };
@@ -164,7 +165,7 @@ function cyborg_push_client_head()
     echo '<script>
         window.CYBORG_PUSH_CONFIG = {
             vapidPublicKey: "' . get_option('cyborg_push_vapid_public_key') . '",
-            swPath: "' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/sw.js') . '",
+            swPath: "' . site_url('cyborg-push-sw.js') . '",
             subscribeUrl: "' . site_url('cyborg_push/subscribe') . '",
             unsubscribeUrl: "' . site_url('cyborg_push/unsubscribe') . '"
         };
