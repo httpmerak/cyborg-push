@@ -100,15 +100,6 @@ class Cyborg_push_sender
      */
     protected function send_web_push($subscription, $notification)
     {
-        $vapid_public = get_option('cyborg_push_vapid_public_key');
-        $vapid_private = get_option('cyborg_push_vapid_private_key');
-        $vapid_subject = get_option('cyborg_push_vapid_subject');
-        
-        if (empty($vapid_public) || empty($vapid_private)) {
-            log_message('error', 'Cyborg Push: VAPID keys not configured');
-            return false;
-        }
-        
         // Log the notification attempt
         $log_id = $this->CI->cyborg_push_model->add_log([
             'subscription_id'   => $subscription['id'],
@@ -123,7 +114,7 @@ class Cyborg_push_sender
         
         try {
             // Build payload
-            $payload = json_encode([
+            $payload = [
                 'title'     => $notification['title'] ?? _l('cyborg_push_new_notification'),
                 'body'      => $notification['body'] ?? '',
                 'icon'      => $notification['icon'] ?? get_option('cyborg_push_default_icon'),
@@ -131,42 +122,22 @@ class Cyborg_push_sender
                 'data'      => $notification['data'] ?? [],
                 'timestamp' => time() * 1000,
                 'tag'       => $notification['tag'] ?? 'cyborg-push-' . time()
-            ]);
-            
-            // Check if web-push library is available
-            if (!class_exists('Minishlink\WebPush\WebPush')) {
-                // Fallback to cURL
-                return $this->send_web_push_curl($subscription, $payload, $log_id);
-            }
-            
-            // Use web-push library
-            $auth = [
-                'VAPID' => [
-                    'subject'    => $vapid_subject ?: site_url(),
-                    'publicKey'  => $vapid_public,
-                    'privateKey' => $vapid_private
-                ]
             ];
             
-            $webPush = new \Minishlink\WebPush\WebPush($auth);
+            // Load native WebPush library (no Composer needed!)
+            $this->CI->load->library('cyborg_push/Cyborg_push_webpush');
             
-            $subscription_obj = \Minishlink\WebPush\Subscription::create([
-                'endpoint' => $subscription['endpoint'],
-                'publicKey' => $subscription['p256dh'],
-                'authToken' => $subscription['auth']
-            ]);
+            // Send notification
+            $result = $this->CI->cyborg_push_webpush->send($subscription, $payload);
             
-            $report = $webPush->sendOneNotification($subscription_obj, $payload);
-            
-            if ($report->isSuccess()) {
+            if ($result['success']) {
                 $this->CI->cyborg_push_model->update_log_status($log_id, 'sent');
                 return true;
             } else {
-                $reason = $report->getReason();
-                $this->CI->cyborg_push_model->update_log_status($log_id, 'failed', $reason);
+                $this->CI->cyborg_push_model->update_log_status($log_id, 'failed', $result['message']);
                 
-                // Mark subscription as expired if endpoint is expired
-                if ($report->isSubscriptionExpired()) {
+                // Mark subscription as expired if needed
+                if ($result['expired']) {
                     $this->CI->cyborg_push_model->mark_subscription_expired($subscription['id']);
                 }
                 
@@ -180,52 +151,6 @@ class Cyborg_push_sender
         }
     }
 
-    /**
-     * Send Web Push using cURL (fallback when library is not available)
-     * 
-     * @param array $subscription
-     * @param string $payload
-     * @param int $log_id
-     * @return bool
-     */
-    protected function send_web_push_curl($subscription, $payload, $log_id)
-    {
-        // This is a simplified implementation
-        // For production, you should use the web-push library
-        
-        $endpoint = $subscription['endpoint'];
-        
-        $headers = [
-            'Content-Type: application/json',
-            'TTL: 86400'
-        ];
-        
-        $ch = curl_init($endpoint);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        
-        if ($http_code >= 200 && $http_code < 300) {
-            $this->CI->cyborg_push_model->update_log_status($log_id, 'sent');
-            return true;
-        } else {
-            $this->CI->cyborg_push_model->update_log_status($log_id, 'failed', "HTTP $http_code: $error");
-            
-            // Mark as expired if gone (410) or not found (404)
-            if ($http_code == 410 || $http_code == 404) {
-                $this->CI->cyborg_push_model->mark_subscription_expired($subscription['id']);
-            }
-            
-            return false;
-        }
-    }
 
     /**
      * Send notification via FCM
