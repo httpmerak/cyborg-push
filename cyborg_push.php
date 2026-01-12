@@ -6,7 +6,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 Module Name: Cyborg Push
 Module URI: https://cyborgsolutions.com.br
 Description: Sistema de notificações push integrado para substituir Pusher. Suporta Web Push (Service Workers), FCM e OneSignal.
-Version: 1.0.0
+Version: 1.0.1
 Author: Cyborg Solutions
 Author URI: https://cyborgsolutions.com.br
 Requires at least: 3.0

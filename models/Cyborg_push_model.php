@@ -31,7 +31,7 @@ class Cyborg_push_model extends App_Model
                 WHEN s.user_id IS NOT NULL THEN "staff"
                 ELSE "contact"
             END as user_type
-        ');
+        ', false);
         $this->db->from(db_prefix() . 'cyborg_push_subscriptions s');
         $this->db->join(db_prefix() . 'staff staff', 'staff.staffid = s.user_id', 'left');
         $this->db->join(db_prefix() . 'contacts contacts', 'contacts.id = s.contact_id', 'left');
@@ -187,7 +187,7 @@ class Cyborg_push_model extends App_Model
                 WHEN l.contact_id IS NOT NULL THEN CONCAT(contacts.firstname, " ", contacts.lastname)
                 ELSE "Unknown"
             END as user_name
-        ');
+        ', false);
         $this->db->from(db_prefix() . 'cyborg_push_logs l');
         $this->db->join(db_prefix() . 'staff staff', 'staff.staffid = l.user_id', 'left');
         $this->db->join(db_prefix() . 'contacts contacts', 'contacts.id = l.contact_id', 'left');
