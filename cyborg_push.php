@@ -93,12 +93,17 @@ hooks()->add_action('before_pusher_trigger_notification', 'cyborg_push_send_noti
 
 function cyborg_push_send_notification($users)
 {
+    // Debug log
+    log_message('error', 'Cyborg Push: Hook called with users: ' . json_encode($users));
+    
     if (empty($users) || !is_array($users)) {
+        log_message('error', 'Cyborg Push: No users to notify');
         return;
     }
     
     // Check if module is enabled
     if (get_option('cyborg_push_enabled') != '1') {
+        log_message('error', 'Cyborg Push: Module is disabled');
         return;
     }
     
@@ -107,6 +112,7 @@ function cyborg_push_send_notification($users)
     
     // Send push notification to each user
     foreach ($users as $user_id) {
+        log_message('error', 'Cyborg Push: Sending to user ' . $user_id);
         $CI->cyborg_push_sender->send_to_user($user_id);
     }
 }
