@@ -115,8 +115,9 @@ class Cyborg_push_webpush
         $cek = $this->hkdfExpand($prk2, $cekInfo, 16);
         $nonce = $this->hkdfExpand($prk2, $nonceInfo, 12);
         
-        // Adicionar padding ao payload
-        $paddedPayload = "\x00\x00" . $payload;
+        // Adicionar delimiter ao payload (aes128gcm format)
+        // O payload precisa terminar com 0x02 para indicar fim
+        $paddedPayload = $payload . "\x02";
         
         // Criptografar com AES-128-GCM
         $tag = '';
