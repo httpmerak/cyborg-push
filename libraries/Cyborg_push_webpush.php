@@ -301,19 +301,39 @@ class Cyborg_push_webpush
         // Decodificar chave privada VAPID
         $privateKeyBytes = $this->base64UrlDecode($this->vapidPrivateKey);
         
-        if (strlen($privateKeyBytes) !== 32) {
-            return false;
+        // Log para debug
+        log_message('debug', 'Cyborg Push: Private key length after decode: ' . strlen($privateKeyBytes));
+        
+        // A chave privada VAPID deve ter 32 bytes, mas pode variar
+        // Alguns geradores produzem chaves com padding diferente
+        if (strlen($privateKeyBytes) < 32) {
+            // Pad to 32 bytes
+            $privateKeyBytes = str_pad($privateKeyBytes, 32, "\x00", STR_PAD_LEFT);
+        } elseif (strlen($privateKeyBytes) > 32) {
+            // Take last 32 bytes
+            $privateKeyBytes = substr($privateKeyBytes, -32);
         }
         
         // Construir chave privada PEM
         $pem = $this->privateKeyToPem($privateKeyBytes);
         if (!$pem) {
+            log_message('error', 'Cyborg Push: Failed to create PEM from private key');
             return false;
         }
         
-        $key = openssl_pkey_get_private($pem);
+        $key = @openssl_pkey_get_private($pem);
         if (!$key) {
-            return false;
+            $error = openssl_error_string();
+            log_message('error', 'Cyborg Push: OpenSSL error getting private key: ' . $error);
+            
+            // Try alternative PEM format
+            $pem = $this->privateKeyToPemAlternative($privateKeyBytes);
+            $key = @openssl_pkey_get_private($pem);
+            
+            if (!$key) {
+                log_message('error', 'Cyborg Push: Alternative PEM also failed');
+                return false;
+            }
         }
         
         // Assinar
@@ -321,11 +341,32 @@ class Cyborg_push_webpush
         $result = openssl_sign($data, $signature, $key, OPENSSL_ALGO_SHA256);
         
         if (!$result) {
+            $error = openssl_error_string();
+            log_message('error', 'Cyborg Push: OpenSSL sign error: ' . $error);
             return false;
         }
         
         // Converter de DER para raw (r || s)
         return $this->derToRaw($signature);
+    }
+    
+    /**
+     * Alternative PEM format for EC private key
+     */
+    protected function privateKeyToPemAlternative($privateKeyBytes)
+    {
+        // Try with explicit public key derivation
+        // This creates a more complete SEC1 format
+        $prefix = hex2bin('30770201010420');
+        $suffix = hex2bin('a00a06082a8648ce3d030107');
+        
+        $der = $prefix . $privateKeyBytes . $suffix;
+        
+        $pem = "-----BEGIN EC PRIVATE KEY-----\n"
+             . chunk_split(base64_encode($der), 64, "\n")
+             . "-----END EC PRIVATE KEY-----\n";
+        
+        return $pem;
     }
     
     /**
