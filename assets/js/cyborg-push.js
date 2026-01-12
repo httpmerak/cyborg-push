@@ -73,18 +73,31 @@
         sendSubscriptionToServer: function (subscription) {
             const data = subscription.toJSON();
 
+            // Get CSRF token from Perfex CRM
+            const csrfName = typeof csrfData !== 'undefined' ? csrfData.token_name : 'csrf_token_name';
+            const csrfHash = typeof csrfData !== 'undefined' ? csrfData.hash : '';
+
+            // Build form data with CSRF token
+            let formData = this.serialize({
+                endpoint: data.endpoint,
+                keys: {
+                    p256dh: data.keys.p256dh,
+                    auth: data.keys.auth
+                }
+            });
+
+            // Add CSRF token
+            if (csrfHash) {
+                formData += '&' + csrfName + '=' + encodeURIComponent(csrfHash);
+            }
+
             fetch(this.config.subscribeUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: this.serialize({
-                    endpoint: data.endpoint,
-                    keys: {
-                        p256dh: data.keys.p256dh,
-                        auth: data.keys.auth
-                    }
-                })
+                body: formData
             })
                 .then(response => response.json())
                 .then(result => {
