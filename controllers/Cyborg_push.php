@@ -15,7 +15,7 @@ class Cyborg_push extends AdminController
      */
     public function index()
     {
-        redirect(admin_url('settings?group=integrations'));
+        redirect(admin_url('settings?group=cyborg_push_settings'));
     }
 
     /**
@@ -38,7 +38,7 @@ class Cyborg_push extends AdminController
             set_alert('danger', _l('cyborg_push_vapid_generation_failed'));
         }
         
-        redirect(admin_url('settings?group=integrations'));
+        redirect(admin_url('settings?group=cyborg_push_settings'));
     }
 
     /**
@@ -96,7 +96,7 @@ class Cyborg_push extends AdminController
             }
             
             set_alert('success', _l('settings_updated'));
-            redirect(admin_url('settings?group=integrations'));
+            redirect(admin_url('settings?group=cyborg_push_settings'));
         }
 
         $data['title'] = _l('cyborg_push_settings');
@@ -233,7 +233,7 @@ class Cyborg_push extends AdminController
             set_alert('danger', _l('cyborg_push_test_failed'));
         }
 
-        redirect(admin_url('settings?group=integrations'));
+        redirect(admin_url('settings?group=cyborg_push_settings'));
     }
 
     /**
