@@ -19,12 +19,6 @@
                             </label>
                         </div>
                         
-                        <div class="form-group">
-                            <label class="control-label">
-                                <input type="checkbox" name="cyborg_push_clients_enabled" value="1" <?php echo get_option('cyborg_push_clients_enabled') == '1' ? 'checked' : ''; ?>>
-                                <?php echo _l('cyborg_push_clients_enabled'); ?>
-                            </label>
-                        </div>
                         
                         <hr />
                         

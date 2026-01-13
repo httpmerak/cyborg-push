@@ -160,34 +160,3 @@ function cyborg_push_add_footer_components()
     echo '<script src="' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/cyborg-push.js') . '"></script>';
 }
 
-/**
- * Client area hooks
- */
-hooks()->add_action('clients_head', 'cyborg_push_client_head');
-
-function cyborg_push_client_head()
-{
-    if (get_option('cyborg_push_enabled') != '1' || get_option('cyborg_push_clients_enabled') != '1') {
-        return;
-    }
-    
-    echo '<script>
-        window.CYBORG_PUSH_CONFIG = {
-            vapidPublicKey: "' . get_option('cyborg_push_vapid_public_key') . '",
-            swPath: "' . site_url('cyborg-push-sw.js') . '",
-            subscribeUrl: "' . site_url('cyborg_push/subscribe') . '",
-            unsubscribeUrl: "' . site_url('cyborg_push/unsubscribe') . '"
-        };
-    </script>';
-}
-
-hooks()->add_action('clients_footer', 'cyborg_push_client_footer');
-
-function cyborg_push_client_footer()
-{
-    if (get_option('cyborg_push_enabled') != '1' || get_option('cyborg_push_clients_enabled') != '1') {
-        return;
-    }
-    
-    echo '<script src="' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/cyborg-push.js') . '"></script>';
-}

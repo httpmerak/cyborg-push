@@ -49,18 +49,11 @@ class Cyborg_push extends AdminController
             // Save settings
             $settings = [
                 'cyborg_push_enabled',
-                'cyborg_push_clients_enabled',
                 'cyborg_push_vapid_public_key',
                 'cyborg_push_vapid_private_key',
                 'cyborg_push_vapid_subject',
                 'cyborg_push_default_icon',
                 'cyborg_push_default_badge',
-                'cyborg_push_fcm_enabled',
-                'cyborg_push_fcm_server_key',
-                'cyborg_push_fcm_sender_id',
-                'cyborg_push_onesignal_enabled',
-                'cyborg_push_onesignal_app_id',
-                'cyborg_push_onesignal_api_key',
                 'cyborg_push_log_retention_days',
                 'cyborg_push_disable_pusher',
             ];
@@ -72,9 +65,6 @@ class Cyborg_push extends AdminController
                     // Checkboxes that are not set
                     if (in_array($setting, [
                         'cyborg_push_enabled',
-                        'cyborg_push_clients_enabled',
-                        'cyborg_push_fcm_enabled',
-                        'cyborg_push_onesignal_enabled',
                         'cyborg_push_disable_pusher'
                     ])) {
                         update_option($setting, '0');
