@@ -55,3 +55,5 @@ $lang['cyborg_push_disable_pusher_help'] = 'Marque para desativar completamente 
 $lang['cyborg_push_clear_all_logs'] = 'Limpar Todos os Logs';
 $lang['cyborg_push_clear_all_logs_confirm'] = 'Tem certeza que deseja remover TODOS os logs? Esta ação não pode ser desfeita.';
 $lang['cyborg_push_all_logs_cleared'] = 'Todos os logs foram removidos com sucesso';
+$lang['yes'] = 'Sim';
+$lang['no'] = 'Não';

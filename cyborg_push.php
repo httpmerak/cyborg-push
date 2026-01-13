@@ -50,6 +50,41 @@ function cyborg_push_app_init()
 }
 
 /**
+ * Disable Pusher if option is enabled
+ * This filter intercepts Pusher initialization and prevents it from working
+ */
+hooks()->add_filter('pusher_options', 'cyborg_push_disable_pusher_filter', 999);
+
+function cyborg_push_disable_pusher_filter($options)
+{
+    if (get_option('cyborg_push_disable_pusher') == '1') {
+        // Add a special option that our JS can check to not load Pusher client
+        $options['disabled_by_cyborg_push'] = true;
+    }
+    
+    return $options;
+}
+
+/**
+ * Remove Pusher JS from admin footer when disabled
+ */
+hooks()->add_action('app_admin_footer', 'cyborg_push_remove_pusher_js', 1);
+
+function cyborg_push_remove_pusher_js()
+{
+    if (get_option('cyborg_push_disable_pusher') == '1') {
+        // Inject script to disable Pusher client-side
+        echo '<script>
+            // Disable Pusher - Cyborg Push is handling notifications
+            window.PUSHER_DISABLED_BY_CYBORG_PUSH = true;
+            if (typeof Pusher !== "undefined") {
+                Pusher = function() { return { subscribe: function(){}, bind: function(){}, trigger: function(){} }; };
+            }
+        </script>';
+    }
+}
+
+/**
  * Initialize menu items and settings in admin
  */
 hooks()->add_action('admin_init', 'cyborg_push_init_menu_items');

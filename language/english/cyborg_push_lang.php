@@ -50,3 +50,5 @@ $lang['cyborg_push_staff_subscriptions'] = 'Staff Subscriptions';
 $lang['cyborg_push_contact_subscriptions'] = 'Contact Subscriptions';
 $lang['cyborg_push_sent_today'] = 'Sent Today';
 $lang['cyborg_push_failed_today'] = 'Failed Today';
+$lang['yes'] = 'Yes';
+$lang['no'] = 'No';
