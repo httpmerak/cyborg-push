@@ -251,4 +251,19 @@ class Cyborg_push extends AdminController
         set_alert('success', _l('cyborg_push_logs_cleared'));
         redirect(admin_url('cyborg_push/logs'));
     }
+
+    /**
+     * Clear ALL logs
+     */
+    public function clear_all_logs()
+    {
+        if (!is_admin()) {
+            access_denied('Cyborg Push');
+        }
+
+        $this->cyborg_push_model->clear_all_logs();
+        
+        set_alert('success', _l('cyborg_push_all_logs_cleared'));
+        redirect(admin_url('cyborg_push/logs'));
+    }
 }

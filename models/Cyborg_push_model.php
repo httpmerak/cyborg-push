@@ -282,6 +282,18 @@ class Cyborg_push_model extends App_Model
     }
 
     /**
+     * Clear ALL logs
+     * 
+     * @return int Number of deleted rows
+     */
+    public function clear_all_logs()
+    {
+        $this->db->truncate(db_prefix() . 'cyborg_push_logs');
+        
+        return true;
+    }
+
+    /**
      * Get statistics
      * 
      * @return array

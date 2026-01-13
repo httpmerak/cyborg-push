@@ -11,8 +11,11 @@
                                 <h4 class="no-margin font-bold"><?php echo $title; ?></h4>
                             </div>
                             <div class="col-md-6 text-right">
-                                <a href="<?php echo admin_url('cyborg_push/clear_logs'); ?>" class="btn btn-danger">
-                                    <i class="fa fa-trash"></i> <?php echo _l('cyborg_push_clear_logs'); ?>
+                                <a href="<?php echo admin_url('cyborg_push/clear_logs'); ?>" class="btn btn-warning">
+                                    <i class="fa fa-clock-o"></i> <?php echo _l('cyborg_push_clear_logs'); ?>
+                                </a>
+                                <a href="<?php echo admin_url('cyborg_push/clear_all_logs'); ?>" class="btn btn-danger _delete" onclick="return confirm('<?php echo _l('cyborg_push_clear_all_logs_confirm'); ?>');">
+                                    <i class="fa fa-trash"></i> <?php echo _l('cyborg_push_clear_all_logs'); ?>
                                 </a>
                             </div>
                         </div>
