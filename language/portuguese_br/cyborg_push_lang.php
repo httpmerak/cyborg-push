@@ -50,3 +50,5 @@ $lang['cyborg_push_staff_subscriptions'] = 'Inscrições de Staff';
 $lang['cyborg_push_contact_subscriptions'] = 'Inscrições de Contatos';
 $lang['cyborg_push_sent_today'] = 'Enviadas Hoje';
 $lang['cyborg_push_failed_today'] = 'Falhas Hoje';
+$lang['cyborg_push_description'] = 'Sistema nativo de notificações push para substituir o Pusher.com';
+$lang['cyborg_push_disable_pusher_help'] = 'Marque para desativar completamente o Pusher e usar apenas o Cyborg Push';

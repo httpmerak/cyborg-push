@@ -66,24 +66,17 @@ function cyborg_push_init_menu_items()
         ]);
         
         $CI->app_menu->add_sidebar_children_item('cyborg-push', [
-            'slug'     => 'cyborg-push-settings',
-            'name'     => _l('cyborg_push_settings'),
-            'href'     => admin_url('cyborg_push/settings'),
-            'position' => 5,
-        ]);
-        
-        $CI->app_menu->add_sidebar_children_item('cyborg-push', [
             'slug'     => 'cyborg-push-subscriptions',
             'name'     => _l('cyborg_push_subscriptions'),
             'href'     => admin_url('cyborg_push/subscriptions'),
-            'position' => 10,
+            'position' => 5,
         ]);
         
         $CI->app_menu->add_sidebar_children_item('cyborg-push', [
             'slug'     => 'cyborg-push-logs',
             'name'     => _l('cyborg_push_logs'),
             'href'     => admin_url('cyborg_push/logs'),
-            'position' => 15,
+            'position' => 10,
         ]);
     }
 }
@@ -160,3 +153,71 @@ function cyborg_push_add_footer_components()
     echo '<script src="' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/cyborg-push.js') . '"></script>';
 }
 
+/**
+ * Add Cyborg Push settings to the main Settings page under Integrations
+ */
+hooks()->add_action('after_render_single_group_settings_tab', 'cyborg_push_settings_tab');
+
+function cyborg_push_settings_tab($group)
+{
+    // Only add to integrations tab
+    if ($group['slug'] !== 'pusher') {
+        return;
+    }
+    
+    $CI = &get_instance();
+    
+    // Include the settings view
+    $CI->load->view('cyborg_push/settings_integration', [
+        'vapid_public_key' => get_option('cyborg_push_vapid_public_key'),
+        'vapid_private_key' => get_option('cyborg_push_vapid_private_key'),
+        'vapid_subject' => get_option('cyborg_push_vapid_subject'),
+        'default_icon' => get_option('cyborg_push_default_icon'),
+        'default_badge' => get_option('cyborg_push_default_badge'),
+        'log_retention_days' => get_option('cyborg_push_log_retention_days'),
+        'enabled' => get_option('cyborg_push_enabled'),
+        'disable_pusher' => get_option('cyborg_push_disable_pusher'),
+    ]);
+}
+
+/**
+ * Save Cyborg Push settings when main settings are saved
+ */
+hooks()->add_action('settings_group_integrations_saved', 'cyborg_push_save_settings');
+
+function cyborg_push_save_settings()
+{
+    $CI = &get_instance();
+    
+    // Handle VAPID key generation
+    if ($CI->input->post('generate_vapid_keys') == '1') {
+        $CI->load->library('cyborg_push/Cyborg_push_vapid');
+        $keys = $CI->cyborg_push_vapid->generate_keys();
+        
+        if ($keys) {
+            update_option('cyborg_push_vapid_public_key', $keys['publicKey']);
+            update_option('cyborg_push_vapid_private_key', $keys['privateKey']);
+        }
+    }
+    
+    // Save settings
+    $settings = [
+        'cyborg_push_enabled',
+        'cyborg_push_vapid_public_key',
+        'cyborg_push_vapid_private_key', 
+        'cyborg_push_vapid_subject',
+        'cyborg_push_default_icon',
+        'cyborg_push_default_badge',
+        'cyborg_push_log_retention_days',
+        'cyborg_push_disable_pusher',
+    ];
+    
+    foreach ($settings as $setting) {
+        $value = $CI->input->post($setting);
+        if ($value !== null) {
+            update_option($setting, $value);
+        } elseif (in_array($setting, ['cyborg_push_enabled', 'cyborg_push_disable_pusher'])) {
+            update_option($setting, '0');
+        }
+    }
+}
