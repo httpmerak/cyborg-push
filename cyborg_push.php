@@ -51,37 +51,39 @@ function cyborg_push_app_init()
 
 /**
  * Disable Pusher if option is enabled
- * This filter intercepts Pusher initialization and prevents it from working
+ * When cyborg_push_disable_pusher is enabled, we disable pusher_realtime_notifications
+ * so the Pusher trigger is skipped and only Cyborg Push handles notifications
  */
-hooks()->add_filter('pusher_options', 'cyborg_push_disable_pusher_filter', 999);
+hooks()->add_action('app_init', 'cyborg_push_check_disable_pusher');
 
-function cyborg_push_disable_pusher_filter($options)
+function cyborg_push_check_disable_pusher()
 {
     if (get_option('cyborg_push_disable_pusher') == '1') {
-        // Add a special option that our JS can check to not load Pusher client
-        $options['disabled_by_cyborg_push'] = true;
+        // Override pusher_realtime_notifications option in runtime
+        // This prevents Pusher from being triggered while Cyborg Push still works
+        $CI = &get_instance();
+        
+        // Store original value and set to 0 to disable Pusher
+        if (!defined('CYBORG_PUSH_DISABLED_PUSHER')) {
+            define('CYBORG_PUSH_DISABLED_PUSHER', true);
+            
+            // Temporarily override the option value in memory
+            $CI->config->set_item('pusher_realtime_notifications', '0');
+        }
     }
-    
-    return $options;
 }
 
 /**
- * Remove Pusher JS from admin footer when disabled
+ * Filter to return 0 for pusher_realtime_notifications when Cyborg Push disabled it
  */
-hooks()->add_action('app_admin_footer', 'cyborg_push_remove_pusher_js', 1);
+hooks()->add_filter('get_option', 'cyborg_push_filter_pusher_option', 999, 2);
 
-function cyborg_push_remove_pusher_js()
+function cyborg_push_filter_pusher_option($value, $name)
 {
-    if (get_option('cyborg_push_disable_pusher') == '1') {
-        // Inject script to disable Pusher client-side
-        echo '<script>
-            // Disable Pusher - Cyborg Push is handling notifications
-            window.PUSHER_DISABLED_BY_CYBORG_PUSH = true;
-            if (typeof Pusher !== "undefined") {
-                Pusher = function() { return { subscribe: function(){}, bind: function(){}, trigger: function(){} }; };
-            }
-        </script>';
+    if ($name === 'pusher_realtime_notifications' && get_option('cyborg_push_disable_pusher') == '1') {
+        return '0';
     }
+    return $value;
 }
 
 /**
