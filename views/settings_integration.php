@@ -1,26 +1,17 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
 
-<!-- Cyborg Push Notifications -->
-<hr class="hr-panel-heading" />
+<!-- Cyborg Push Notifications Settings -->
 <h4 class="no-margin font-bold"><?php echo _l('cyborg_push'); ?></h4>
 <p class="text-muted"><?php echo _l('cyborg_push_description'); ?></p>
+<hr class="hr-panel-heading" />
 
 <div class="row">
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label">
-                <input type="checkbox" name="cyborg_push_enabled" value="1" <?php echo $enabled == '1' ? 'checked' : ''; ?>>
-                <?php echo _l('cyborg_push_enabled'); ?>
-            </label>
-        </div>
-        
-        <div class="form-group">
-            <label class="control-label">
-                <input type="checkbox" name="cyborg_push_disable_pusher" value="1" <?php echo $disable_pusher == '1' ? 'checked' : ''; ?>>
-                <?php echo _l('cyborg_push_disable_pusher'); ?>
-            </label>
-            <p class="text-muted"><?php echo _l('cyborg_push_disable_pusher_help'); ?></p>
-        </div>
+        <?php echo render_yes_no_option('cyborg_push_enabled', 'cyborg_push_enabled'); ?>
+    </div>
+    <div class="col-md-6">
+        <?php echo render_yes_no_option('cyborg_push_disable_pusher', 'cyborg_push_disable_pusher'); ?>
+        <p class="text-muted mtop5"><?php echo _l('cyborg_push_disable_pusher_help'); ?></p>
     </div>
 </div>
 
@@ -31,32 +22,25 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_vapid_public_key'); ?></label>
-            <input type="text" name="cyborg_push_vapid_public_key" class="form-control" value="<?php echo $vapid_public_key; ?>">
-        </div>
+        <?php echo render_input('settings[cyborg_push_vapid_public_key]', 'cyborg_push_vapid_public_key', get_option('cyborg_push_vapid_public_key')); ?>
     </div>
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_vapid_private_key'); ?></label>
-            <input type="password" name="cyborg_push_vapid_private_key" class="form-control" value="<?php echo $vapid_private_key; ?>">
-        </div>
+        <?php echo render_input('settings[cyborg_push_vapid_private_key]', 'cyborg_push_vapid_private_key', get_option('cyborg_push_vapid_private_key'), 'password'); ?>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_vapid_subject'); ?></label>
-            <input type="text" name="cyborg_push_vapid_subject" class="form-control" placeholder="mailto:admin@example.com" value="<?php echo $vapid_subject; ?>">
-        </div>
+        <?php echo render_input('settings[cyborg_push_vapid_subject]', 'cyborg_push_vapid_subject', get_option('cyborg_push_vapid_subject'), 'text', ['placeholder' => 'mailto:admin@example.com']); ?>
     </div>
     <div class="col-md-6">
         <div class="form-group">
             <label class="control-label">&nbsp;</label>
-            <button type="submit" name="generate_vapid_keys" value="1" class="btn btn-default btn-block">
-                <i class="fa fa-key"></i> <?php echo _l('cyborg_push_generate_vapid'); ?>
-            </button>
+            <div>
+                <a href="<?php echo admin_url('cyborg_push/generate_vapid'); ?>" class="btn btn-default">
+                    <i class="fa fa-key"></i> <?php echo _l('cyborg_push_generate_vapid'); ?>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -66,29 +50,20 @@
 <!-- Additional Settings -->
 <div class="row">
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_default_icon'); ?></label>
-            <input type="text" name="cyborg_push_default_icon" class="form-control" value="<?php echo $default_icon; ?>">
-        </div>
+        <?php echo render_input('settings[cyborg_push_default_icon]', 'cyborg_push_default_icon', get_option('cyborg_push_default_icon')); ?>
     </div>
     <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_default_badge'); ?></label>
-            <input type="text" name="cyborg_push_default_badge" class="form-control" value="<?php echo $default_badge; ?>">
-        </div>
+        <?php echo render_input('settings[cyborg_push_default_badge]', 'cyborg_push_default_badge', get_option('cyborg_push_default_badge')); ?>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-3">
-        <div class="form-group">
-            <label class="control-label"><?php echo _l('cyborg_push_log_retention_days'); ?></label>
-            <input type="number" name="cyborg_push_log_retention_days" class="form-control" value="<?php echo $log_retention_days ?: 30; ?>" min="1" max="365">
-        </div>
+        <?php echo render_input('settings[cyborg_push_log_retention_days]', 'cyborg_push_log_retention_days', get_option('cyborg_push_log_retention_days') ?: 30, 'number', ['min' => 1, 'max' => 365]); ?>
     </div>
 </div>
 
-<div class="row">
+<div class="row mtop15">
     <div class="col-md-12">
         <a href="<?php echo admin_url('cyborg_push/test_notification'); ?>" class="btn btn-info">
             <i class="fa fa-bell"></i> <?php echo _l('cyborg_push_test_notification'); ?>

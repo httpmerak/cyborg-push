@@ -50,14 +50,27 @@ function cyborg_push_app_init()
 }
 
 /**
- * Initialize menu items in admin
+ * Initialize menu items and settings in admin
  */
 hooks()->add_action('admin_init', 'cyborg_push_init_menu_items');
 
 function cyborg_push_init_menu_items()
 {
+    $CI = &get_instance();
+    
+    // Add settings under Integrations section (like wm_api does)
+    if (is_admin() || has_permission('settings', '', 'view')) {
+        // Add as a child of the existing "integrations" section
+        $CI->app->add_settings_section_child('integrations', 'cyborg_push_settings', [
+            'name'     => _l('cyborg_push'),
+            'view'     => 'cyborg_push/settings_integration',
+            'position' => 15, // After Pusher (position 10)
+            'icon'     => 'fa fa-bell',
+        ]);
+    }
+    
+    // Menu lateral apenas para Subscriptions e Logs
     if (is_admin()) {
-        $CI = &get_instance();
         $CI->app_menu->add_sidebar_menu_item('cyborg-push', [
             'collapse' => true,
             'name'     => _l('cyborg_push'),
@@ -151,33 +164,6 @@ function cyborg_push_add_footer_components()
     
     $CI = &get_instance();
     echo '<script src="' . module_dir_url(CYBORG_PUSH_MODULE_NAME, 'assets/js/cyborg-push.js') . '"></script>';
-}
-
-/**
- * Add Cyborg Push settings to the main Settings page under Integrations
- */
-hooks()->add_action('after_render_single_group_settings_tab', 'cyborg_push_settings_tab');
-
-function cyborg_push_settings_tab($group)
-{
-    // Only add to integrations tab
-    if ($group['slug'] !== 'pusher') {
-        return;
-    }
-    
-    $CI = &get_instance();
-    
-    // Include the settings view
-    $CI->load->view('cyborg_push/settings_integration', [
-        'vapid_public_key' => get_option('cyborg_push_vapid_public_key'),
-        'vapid_private_key' => get_option('cyborg_push_vapid_private_key'),
-        'vapid_subject' => get_option('cyborg_push_vapid_subject'),
-        'default_icon' => get_option('cyborg_push_default_icon'),
-        'default_badge' => get_option('cyborg_push_default_badge'),
-        'log_retention_days' => get_option('cyborg_push_log_retention_days'),
-        'enabled' => get_option('cyborg_push_enabled'),
-        'disable_pusher' => get_option('cyborg_push_disable_pusher'),
-    ]);
 }
 
 /**

@@ -11,11 +11,34 @@ class Cyborg_push extends AdminController
     }
 
     /**
-     * Module index - redirect to settings
+     * Module index - redirect to integrations settings
      */
     public function index()
     {
-        redirect(admin_url('cyborg_push/settings'));
+        redirect(admin_url('settings?group=integrations'));
+    }
+
+    /**
+     * Generate VAPID keys
+     */
+    public function generate_vapid()
+    {
+        if (!is_admin()) {
+            access_denied('Cyborg Push Settings');
+        }
+        
+        $this->load->library('cyborg_push/Cyborg_push_vapid');
+        $keys = $this->cyborg_push_vapid->generate_keys();
+        
+        if ($keys) {
+            update_option('cyborg_push_vapid_public_key', $keys['publicKey']);
+            update_option('cyborg_push_vapid_private_key', $keys['privateKey']);
+            set_alert('success', _l('cyborg_push_vapid_generated'));
+        } else {
+            set_alert('danger', _l('cyborg_push_vapid_generation_failed'));
+        }
+        
+        redirect(admin_url('settings?group=integrations'));
     }
 
     /**
