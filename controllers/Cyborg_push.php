@@ -206,7 +206,7 @@ class Cyborg_push extends AdminController
 
         $this->cyborg_push_model->delete_subscription($id);
         set_alert('success', _l('deleted'));
-        redirect(admin_url('cyborg_push/subscriptions'));
+        redirect(admin_url('settings?group=cyborg_push_settings#cyborg_push_subscriptions_tab'));
     }
 
     /**
@@ -249,7 +249,7 @@ class Cyborg_push extends AdminController
         $this->cyborg_push_model->clear_old_logs($days);
         
         set_alert('success', _l('cyborg_push_logs_cleared'));
-        redirect(admin_url('cyborg_push/logs'));
+        redirect(admin_url('settings?group=cyborg_push_settings#cyborg_push_logs_tab'));
     }
 
     /**
@@ -264,6 +264,6 @@ class Cyborg_push extends AdminController
         $this->cyborg_push_model->clear_all_logs();
         
         set_alert('success', _l('cyborg_push_all_logs_cleared'));
-        redirect(admin_url('cyborg_push/logs'));
+        redirect(admin_url('settings?group=cyborg_push_settings#cyborg_push_logs_tab'));
     }
 }
