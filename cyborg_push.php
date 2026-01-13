@@ -68,30 +68,6 @@ function cyborg_push_init_menu_items()
             'icon'     => 'fa fa-bell',
         ]);
     }
-    
-    // Menu lateral apenas para Subscriptions e Logs
-    if (is_admin()) {
-        $CI->app_menu->add_sidebar_menu_item('cyborg-push', [
-            'collapse' => true,
-            'name'     => _l('cyborg_push'),
-            'position' => 45,
-            'icon'     => 'fa fa-bell',
-        ]);
-        
-        $CI->app_menu->add_sidebar_children_item('cyborg-push', [
-            'slug'     => 'cyborg-push-subscriptions',
-            'name'     => _l('cyborg_push_subscriptions'),
-            'href'     => admin_url('cyborg_push/subscriptions'),
-            'position' => 5,
-        ]);
-        
-        $CI->app_menu->add_sidebar_children_item('cyborg-push', [
-            'slug'     => 'cyborg-push-logs',
-            'name'     => _l('cyborg_push_logs'),
-            'href'     => admin_url('cyborg_push/logs'),
-            'position' => 10,
-        ]);
-    }
 }
 
 /**

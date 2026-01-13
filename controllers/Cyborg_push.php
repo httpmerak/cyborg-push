@@ -96,7 +96,7 @@ class Cyborg_push extends AdminController
             }
             
             set_alert('success', _l('settings_updated'));
-            redirect(admin_url('cyborg_push/settings'));
+            redirect(admin_url('settings?group=integrations'));
         }
 
         $data['title'] = _l('cyborg_push_settings');
@@ -233,7 +233,7 @@ class Cyborg_push extends AdminController
             set_alert('danger', _l('cyborg_push_test_failed'));
         }
 
-        redirect(admin_url('cyborg_push/settings'));
+        redirect(admin_url('settings?group=integrations'));
     }
 
     /**
